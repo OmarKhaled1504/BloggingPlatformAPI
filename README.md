@@ -2,6 +2,7 @@
 
 A RESTful API built with ASP.NET Core and Entity Framework Core, designed to manage blog posts, categories, and tags. It demonstrates clean architecture, efficient many-to-many relationship handling, and a code-first approach using MySQL via Pomelo.
 
+
 ---
 
 ## 🚀 Features
@@ -11,10 +12,11 @@ A RESTful API built with ASP.NET Core and Entity Framework Core, designed to man
 - 🏷 Tagging system with many-to-many support
 - 🧼 DTO-based data contracts
 - 📅 Automatic handling of creation and update timestamps
-- 🐬 MySQL integration with Pomelo provider
 - 🔍 Search posts by title, content, or category term
 - 📄 Pagination for efficient result browsing
 - ✅ Model validation for POST and PUT requests
+- 💡 Separated business logic from controllers using a service layer
+- 🐬 MySQL integration with Pomelo provider
 
 ---
 
@@ -32,15 +34,16 @@ A RESTful API built with ASP.NET Core and Entity Framework Core, designed to man
 
 ```
 BloggingPlatformAPI/
-├── Controllers/           # API Controllers
-├── Data/                  # DbContext and config
+├── Controllers/           # API Controllers (request handling only)
+├── Data/                  # DbContext and configuration
 ├── Dtos/                  # DTO definitions
 ├── Entities/              # Entity models
 ├── Mapping/               # Entity <-> DTO mapping
 ├── Migrations/            # EF Core migrations
-├── Responses/             # Responses for pagination
-├── appsettings.json       # Configuration
-└── Program.cs             # App entry point
+├── Responses/             # Standardized responses (e.g., pagination)
+├── Services/              # Business logic services
+├── appsettings.json       # Configuration file
+└── Program.cs             # Application entry point
 ```
 
 ---
@@ -132,7 +135,7 @@ GET /api/posts?term=core&pageNumber=1&pageSize=5
 
 ## 🧪 Testing
 
-Use [Postman](https://www.postman.com/) or Swagger UI (auto-enabled in dev) to test endpoints.
+Use [Postman](https://www.postman.com/) or Swagger UI (auto-enabled in development) to test endpoints.
 
 ---
 
