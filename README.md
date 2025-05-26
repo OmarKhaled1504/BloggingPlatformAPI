@@ -12,6 +12,9 @@ A RESTful API built with ASP.NET Core and Entity Framework Core, designed to man
 - 🧼 DTO-based data contracts
 - 📅 Automatic handling of creation and update timestamps
 - 🐬 MySQL integration with Pomelo provider
+- 🔍 Search posts by title, content, or category term
+- 📄 Pagination for efficient result browsing
+- ✅ Model validation for POST and PUT requests
 
 ---
 
@@ -35,6 +38,7 @@ BloggingPlatformAPI/
 ├── Entities/              # Entity models
 ├── Mapping/               # Entity <-> DTO mapping
 ├── Migrations/            # EF Core migrations
+├── Responses/             # Responses for pagination
 ├── appsettings.json       # Configuration
 └── Program.cs             # App entry point
 ```
@@ -90,10 +94,10 @@ BloggingPlatformAPI/
 
 ### Posts
 
-- `GET /api/posts` – Get all posts
+- `GET /api/posts` – Get all posts (supports `pageNumber`, `pageSize`, and `term` query)
 - `GET /api/posts/{id}` – Get a specific post
-- `POST /api/posts` – Create a post
-- `PUT /api/posts/{id}` – Update a post
+- `POST /api/posts` – Create a post with validation
+- `PUT /api/posts/{id}` – Update a post with validation
 - `DELETE /api/posts/{id}` – Delete a post
 
 ### Sample POST Request
@@ -105,6 +109,12 @@ BloggingPlatformAPI/
   "category": "Web Development",
   "tags": ["ASP.NET", "C#", "EF Core"]
 }
+```
+
+### Sample Search
+
+```
+GET /api/posts?term=core&pageNumber=1&pageSize=5
 ```
 
 ---
@@ -141,3 +151,4 @@ Licensed under the [MIT License](LICENSE).
 ## 📫 Contact
 
 Created by [Omar Khaled](https://github.com/OmarKhaled1504)
+> **Inspired by [roadmap.sh's Blogging Platform API project](https://roadmap.sh/projects/blogging-platform-api).**
