@@ -2,6 +2,7 @@ using BloggingAPI.Data;
 using BloggingAPI.Dtos;
 using BloggingAPI.Entities;
 using BloggingAPI.Mapping;
+using BloggingAPI.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -76,15 +77,27 @@ public class PostsController : ControllerBase
     //GET /api/posts
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<PostDto>), 200)]
-    public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts()
-    {
+    public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts(int pageNumber = 1, int pageSize = 10)
+    {   if (pageNumber < 1 || pageSize < 1)
+        {
+            return BadRequest("Page number and page size must be positive.");
+        }
+        var totalCount = await _context.Posts.CountAsync();
         var posts = await _context.Posts
-        .Include(post => post.Category)
-        .Include(post => post.PostTags)
-        .ThenInclude(pt => pt.Tag)
-        .Select(post => post.ToDto())
-        .ToListAsync();
-        return Ok(posts);
+            .Include(post => post.Category)
+            .Include(post => post.PostTags)
+            .ThenInclude(pt => pt.Tag)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(post => post.ToDto())
+            .ToListAsync();
+        return Ok(new PagedResponse<PostDto>
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            Data = posts
+        });
     }
     //PUT /api/posts/1
     [HttpPut("{id}")]
@@ -147,5 +160,5 @@ public class PostsController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
-    //TODO: implement pagination for GetPosts, querying by terms in tags, category, title and content, add validation and data annotations for bad requests
+    //TODO: implement querying by terms in tags, category, title and content, add validation and data annotations for bad requests
 }
