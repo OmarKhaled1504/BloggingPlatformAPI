@@ -15,16 +15,19 @@ public class BlogContext : DbContext
 {
     // Composite key for PostTag
     modelBuilder.Entity<PostTag>()
-        .HasKey(pt => new { pt.PostId, pt.TagId });
+    .HasKey(pt => new { pt.PostId, pt.TagId });
 
-    modelBuilder.Entity<PostTag>()
-        .HasOne(pt => pt.Post)
-        .WithMany(p => p.PostTags)
-        .HasForeignKey(pt => pt.PostId);
+modelBuilder.Entity<PostTag>()
+    .HasOne(pt => pt.Post)
+    .WithMany(p => p.PostTags)
+    .HasForeignKey(pt => pt.PostId)
+    .OnDelete(DeleteBehavior.Cascade); // ✅ Delete relationship if Post is deleted
 
-    modelBuilder.Entity<PostTag>()
-        .HasOne(pt => pt.Tag)
-        .WithMany(t => t.PostTags)
-        .HasForeignKey(pt => pt.TagId);
+modelBuilder.Entity<PostTag>()
+    .HasOne(pt => pt.Tag)
+    .WithMany(t => t.PostTags)
+    .HasForeignKey(pt => pt.TagId)
+    .OnDelete(DeleteBehavior.Cascade); // ✅ Delete relationship if Tag is deleted
+
 }
 }
