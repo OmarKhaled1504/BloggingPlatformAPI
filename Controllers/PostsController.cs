@@ -63,7 +63,6 @@ public class PostsController : ControllerBase
         return CreatedAtAction(nameof(GetPost), new { id = post.Id }, savedPost!.ToDto());
     }
 
-
     //GET /api/posts/1
     [HttpGet("{id}")]
     [ProducesResponseType(404)]
@@ -72,5 +71,19 @@ public class PostsController : ControllerBase
     {
         var post = await _context.Posts.Include(post => post.Category).Include(post => post.PostTags).ThenInclude(pt => pt.Tag).SingleOrDefaultAsync(post => post.Id == id);
         return post is null ? NotFound() : Ok(post.ToDto());
+    }
+
+    //GET /api/posts
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<PostDto>), 200)]
+    public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts()
+    {
+        var posts = await _context.Posts
+        .Include(post => post.Category)
+        .Include(post => post.PostTags)
+        .ThenInclude(pt => pt.Tag)
+        .Select(post => post.ToDto())
+        .ToListAsync();
+        return Ok(posts);
     }
 }
