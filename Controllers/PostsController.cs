@@ -24,7 +24,6 @@ public class PostsController : ControllerBase
     public async Task<ActionResult<PostDto>> CreatePost(PostCreateDto dto)
     {
         var post = dto.ToEntity();
-
         var cat = await _context.Categories.FirstOrDefaultAsync(cat => cat.Name == dto.Category);
         if (cat == null)
         {
@@ -77,32 +76,46 @@ public class PostsController : ControllerBase
     //GET /api/posts
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<PostDto>), 200)]
-    public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts(int pageNumber = 1, int pageSize = 10)
-    {   if (pageNumber < 1 || pageSize < 1)
+    public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts(int pageNumber = 1, int pageSize = 10, string? term = null)
+    {
+        if (pageNumber < 1 || pageSize < 1)
         {
             return BadRequest("Page number and page size must be positive.");
         }
-        var totalCount = await _context.Posts.CountAsync();
-        var posts = await _context.Posts
-            .Include(post => post.Category)
-            .Include(post => post.PostTags)
-            .ThenInclude(pt => pt.Tag)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(post => post.ToDto())
-            .ToListAsync();
+        if (pageSize > 100)
+            pageSize = 100;
+
+        var query = _context.Posts
+        .Include(post => post.Category)
+        .Include(post => post.PostTags)
+        .ThenInclude(pt => pt.Tag)
+        .AsQueryable();
+
+        if (!string.IsNullOrEmpty(term))
+        {
+            query = query
+            .Where(post => post.Title.Contains(term) || post.Content.Contains(term) || post.Category!.Name.Contains(term));
+        }
+        var totalCount = await query.CountAsync();
+        var posts = await query
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .Select(post => post.ToDto())
+        .ToListAsync();
         return Ok(new PagedResponse<PostDto>
         {
+            Data = posts,
             PageNumber = pageNumber,
             PageSize = pageSize,
-            TotalCount = totalCount,
-            Data = posts
+            TotalCount = totalCount
         });
     }
+
     //PUT /api/posts/1
     [HttpPut("{id}")]
     [ProducesResponseType(404)]
     [ProducesResponseType(typeof(PostDto), 200)]
+    [ProducesResponseType(400)]
     public async Task<ActionResult<PostDto>> UpdatePost(int id, PostCreateDto dto)
     {
         var post = await _context.Posts.Include(post => post.Category).Include(post => post.PostTags).ThenInclude(pt => pt.Tag).SingleOrDefaultAsync(post => post.Id == id);
@@ -120,11 +133,11 @@ public class PostsController : ControllerBase
         }
         post.Category = cat;
 
-
+        _context.PostTags.RemoveRange(post.PostTags);
+        post.PostTags.Clear();
         if (dto.Tags?.Count > 0)
         {
-            _context.PostTags.RemoveRange(post.PostTags);
-            post.PostTags.Clear();
+
             foreach (string tagName in dto.Tags)
             {
                 var tag = await _context.Tags.FirstOrDefaultAsync(tag => tag.Name == tagName);
@@ -160,5 +173,4 @@ public class PostsController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
-    //TODO: implement querying by terms in tags, category, title and content, add validation and data annotations for bad requests
 }
