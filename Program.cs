@@ -1,4 +1,5 @@
 using BloggingAPI.Data;
+using BloggingAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +15,7 @@ options.UseMySql(
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddScoped<IPostService, PostService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
